@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { UserService } from '../../services/user.service';
 import { techExamples } from '../../data/examples/tech-examples';
 import { scienceExamples } from '../../data/examples/science-examples';
@@ -15,6 +15,7 @@ interface Message {
   templateUrl: './home.component.html'
 })
 export class HomeComponent implements OnInit {
+  @ViewChild('chatMessages') private chatMessages!: ElementRef;
 
   username: string = sessionStorage.getItem('username') || '';
   currentMessage: string = '';
@@ -81,13 +82,21 @@ export class HomeComponent implements OnInit {
         text: this.inputValue,
         timestamp: new Date()
       });
-      this.inputValue = '';
       
-      // Resetar altura do textarea
       const textarea = document.getElementById('message-input') as HTMLTextAreaElement;
       if (textarea) {
-        textarea.style.height = '48px'; // altura mínima definida em min-h-[48px]
+        this.inputValue = '';
+        textarea.value = '';  
+        textarea.style.height = '48px'; 
+        textarea.classList.remove('overflow-y-auto');
+        textarea.classList.add('overflow-y-hidden');
       }
+
+      setTimeout(() => {
+        if (this.chatMessages) {
+          this.chatMessages.nativeElement.scrollTop = this.chatMessages.nativeElement.scrollHeight;
+        }
+      });
     }
   }
 
@@ -127,5 +136,10 @@ export class HomeComponent implements OnInit {
       element.classList.add('overflow-y-hidden');
       element.classList.remove('overflow-y-auto');
     }
+  }
+
+  logout() {
+    sessionStorage.removeItem('username');
+    window.location.reload();
   }
 }
